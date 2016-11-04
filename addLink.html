@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        .node {
+            fill: #ccc;
+            stroke: #fff;
+            stroke-width: 2px;
+        }
+
+        .link {
+            stroke: #777;
+            stroke-width: 2px;
+        }
+    </style>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+</head>
+<body>
+    <script>
+        // Set width and height for d3
+        var width = 640, height = 480;
+        var nodes = [
+            {
+                name : "Alice"
+            },
+            {
+                name : "Bob"
+            },
+            {
+                name : "Eva"
+            }
+        ];
+        // Add link
+        var links = [
+            {source : 0, target : 1},
+            {source : 1, target : 2},
+            {source : 2, target : 0}
+        ];
+        
+        // Add the svg
+        var svg = d3.select('body').append('svg')
+                    .attr('width', width)
+                    .attr('height', height);
+        // Setup link
+        var link = svg.selectAll('.link')
+                    .data(links).enter().append('line')
+                    .attr('class', 'link');
+        // Add nodes
+        var node = svg.selectAll('.node')
+                    .data(nodes)
+                    .enter().append('circle')
+                    .attr('class', 'node')
+                    .attr("cx", function (d, i) { return (i + 1) * (width/4);})
+                    .attr("cy", function (d, i) { return height/2;})
+                    .attr('r', width * 0.05);
+        // Use the force
+        var force = d3.layout.force()
+                    .size([width, height])
+                    .nodes(nodes)
+                    .links(links)
+                    .on('tick', tick)
+                    .linkDistance(width/2)
+                    .start();
+
+        function tick() {
+            node.attr('cx', function(d) { return d.x;})
+                .attr('cy', function(d) { return d.y;})
+                .call(force.drag);
+
+            link.attr('x1', function(d) {return d.source.x;})
+                .attr('y1', function(d) {return d.source.y;})
+                .attr('x2', function(d) { return d.target.x;})
+                .attr('y2', function(d) {return d.target.y;})
+        }
+    </script>
+</body>
+</html>
