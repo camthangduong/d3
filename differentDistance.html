@@ -14,18 +14,25 @@
             stroke: #777;
             stroke-width: 2px;
         }
+
+        h1 {
+            padding: 10px;
+        }
     </style>
     <script src="http://d3js.org/d3.v3.min.js"></script>
 </head>
 <body>
-    <!-- Add slider control -->
-    <h4>gravity(<span id="sliderLabel">0.1</span>) 
-            <input type="range" value="0.1" min="0" max="1" onchange="forceUpdate(this.value);" step=".01" />
-    </h4>
-
+    <label>Change the distance</label>
+    <input />
     <script>
+
+        var param = document.URL.split("#")[1] || Number(d3.select('input')[0].Value) ||  200;
+
+        var header = d3.select('body').append('h1')
+                    .html("linkDistance(" + param + ")");
+
         // Set width and height for d3
-        var width = 480, height = 480;
+        var width = 640, height = 480;
         var nodes = [
             {
                 name : "Alice"
@@ -39,21 +46,15 @@
         ];
         // Add link
         var links = [
-            {source : 0, target : 1},
-            {source : 1, target : 2},
-            {source : 2, target : 0}
+            {source : 0, target : 1, distance: 100},
+            {source : 1, target : 2, distance : 200},
+            {source : 2, target : 0, distance: 300}
         ];
         
         // Add the svg
         var svg = d3.select('body').append('svg')
                     .attr('width', width)
                     .attr('height', height);
-        
-        var path = svg.append("svg:g").selectAll("path")
-                    .data(links)
-                    .enter().append("svg:path")
-                    .attr("class", "link");
-
         
         // Add nodes
         var node = svg.selectAll('.node')
@@ -64,6 +65,11 @@
                     .attr("cy", function (d, i) { return height/2;})
                     .attr('r', width * 0.05);
 
+        var path = svg.append("svg:g").selectAll("path")
+                    .data(links)
+                    .enter().append("svg:path")
+                    .attr("class", "link");
+
 
         // Use the force
         var force = d3.layout.force()
@@ -71,15 +77,8 @@
                     .nodes(nodes)
                     .links(links)
                     .on('tick', tick)
-                    .gravity(0.1)
-                    .linkDistance(width/2)
+                    .linkDistance(function (d) {return d.distance;})
                     .start();
-
-        function forceUpdate(val) {
-            d3.select("#sliderLabel").text(val);
-            force.gravity(val);
-            force.start();
-        }
 
         function tick() {
             node.attr('cx', function(d) { return d.x;})
