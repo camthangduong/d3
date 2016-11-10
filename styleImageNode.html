@@ -14,6 +14,14 @@
             stroke: #777;
             stroke-width: 2px;
         }
+
+        path.link.win {
+            stroke: #a6d96a;
+        }
+
+        path.link.lost {
+            stroke: #ca0020;
+        }
     </style>
     <script src="http://d3js.org/d3.v3.min.js"></script>
 </head>
@@ -36,11 +44,30 @@
             var svg = d3.select('body').append('svg')
                     .attr('width', width)
                     .attr('height', height);
-        
+
+            // Add maker definition
+            svg.append("svg:defs").selectAll("marker")
+                .data(["end"])
+                .enter().append("svg:marker")
+                .attr("id", String)
+                .attr("viewBox", "0 -5 10 10")
+                .attr("refX", 24)
+                .attr("refY", -1)
+                .attr("markerWidth", 4)
+                .attr("markerHeight", 4)
+                .attr("orient", "auto")
+                .attr("fill", "#404040")
+                .append("svg:path")
+                .attr("d", "M0,-5L10,0L0,5");
+
+            // add maker to link
             var path = svg.append("svg:g").selectAll("path")
                     .data(links)
                     .enter().append("svg:path")
-                    .attr("class", "link");
+                    .attr("class", function(d){
+                        return "link " + d.attacker_outcome;
+                    })
+                    .attr("marker-end", "url(#end)");
 
         
             // Add nodes
@@ -65,7 +92,7 @@
                         .links(links)
                         .on('tick', tick)
                         .charge(-300)
-                        .linkDistance(width/2)
+                        .linkDistance(100)
                         .start();
 
             function forceUpdate(val) {
@@ -81,14 +108,15 @@
                     .call(force.drag);
 
                 path.attr('d', function(d, i) {
-                        var dx = d.target.x - d.source.x;
-                        var dy = d.target.y - d.source.y;
-                        var dr = Math.sqrt(dx*dx + dy*dy);
+                    var curve = d.family_battle_number * 0.9;
+                    var dx = d.target.x - d.source.x;
+                    var dy = d.target.y - d.source.y;
+                    var dr = Math.sqrt(dx*dx * curve + dy*dy*curve);
 
-                        return "M" + 
-                                d.source.x + "," + 
-                                d.source.y + "A" +
-                                dr + "," + dr + " 0 0,1 " +
+                    return "M" + 
+                            d.source.x + "," + 
+                            d.source.y + "A" +
+                            dr + "," + dr + " 0 0,1 " +
                                 d.target.x + "," + 
                                 d.target.y;
                     });
