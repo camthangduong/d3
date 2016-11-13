@@ -14,6 +14,13 @@
     path.link.loss {
         stroke: #ca0020;
     }
+
+    .label {
+        pointer-events: none;
+        font: 8px sans-serif;
+        text-transform: uppercase;
+        color: #000;
+    }
     
 </style>
 
@@ -23,8 +30,8 @@
 
 // set a width and height for our SVG
 var margin = 0.8,
-    width = window.innerWidth*margin,
-    height = window.innerHeight*margin;
+    width = 1024,
+    height = 600;
 
 // pull in data
 d3.csv("battles.csv", function(error, links) {
@@ -99,6 +106,12 @@ d3.csv("battles.csv", function(error, links) {
         .attr("height", 50)
         .attr("width", 50);
 
+    node.append("text")
+        .attr("text-anchor","middle")
+        .attr("dy", ".35em")
+        .attr("y", -22)
+        .attr("class", "label")
+        .text(function(d) {return d.name;});
 
     // tick function to create curved lines and move things around    
     function tick(e) {

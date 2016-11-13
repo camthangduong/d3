@@ -2,6 +2,22 @@
 <meta charset="utf-8">
 <style>
     /*add style info*/
+    .hovercard {
+        position: absolute;
+        max-width: 400px;
+        height: auto;
+        padding: 5px;
+        background-color: #fff;
+        -webkit-border-radius : 5px;
+        -moz-border-radius: 5px;
+        border-radius: 5px;
+        -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0 , 0.4);
+        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        pointer-events: none;
+        font: 12px sans-serif;
+    }
+
     path.link {
         fill: none;
         stroke-width: 2px;
@@ -14,6 +30,13 @@
     path.link.loss {
         stroke: #ca0020;
     }
+
+    .label {
+        pointer-events: none;
+        font: 8px sans-serif;
+        text-transform: uppercase;
+        color: #000;
+    }
     
 </style>
 
@@ -23,8 +46,8 @@
 
 // set a width and height for our SVG
 var margin = 0.8,
-    width = window.innerWidth*margin,
-    height = window.innerHeight*margin;
+    width = 1024,
+    height = 600;
 
 // pull in data
 d3.csv("battles.csv", function(error, links) {
@@ -42,6 +65,10 @@ d3.csv("battles.csv", function(error, links) {
         link.value = +link.value;        
     });
 
+    var hovercard = d3.select('body').append('div')
+                .attr("class", "hovercard")
+                .style("opacity", 0)
+                .style("width", 400);
 
     // log to console for debugging
     console.log(JSON.stringify(links, null, 4));
@@ -99,6 +126,12 @@ d3.csv("battles.csv", function(error, links) {
         .attr("height", 50)
         .attr("width", 50);
 
+    node.append("text")
+        .attr("text-anchor","middle")
+        .attr("dy", ".35em")
+        .attr("y", -22)
+        .attr("class", "label")
+        .text(function(d) {return d.name;});
 
     // tick function to create curved lines and move things around    
     function tick(e) {
@@ -123,6 +156,34 @@ d3.csv("battles.csv", function(error, links) {
         node.attr("transform", function(d) {
             return "translate(" + d.x + "," + d.y + ")"; });
         
+        path.on("mouseover", function(d){
+            hovercard.transition()
+                .duration(200)
+                .style("opacity", 1);
+            var tip = 
+                '<h2>' + d.name + '</h2>' +
+                '<h4>' + d.source.name + ' attacked ' + d.target.name + ' and the outcome was a ' + d.attacker_outcome + '</h4>' +
+                '<h3>Details</h3>' +
+                '<strong> Attacker King: </strong>'+d.attacker_king + '<br/>'+
+                '<strong> Battle Type: </strong>'+d.battle_type + '<br/>'+
+                '<strong> Major Death?: </strong>'+d.major_death + '<br/>'+
+                '<strong> Major Capture?: </strong>'+d.major_capture + '<br/>'+
+                '<strong> Attacker Size: </strong>'+d.value + '<br/>'+
+                '<strong> Defender Size: </strong>'+d.defender_size + '<br/>'+
+                '<strong> Region / Location: </strong>'+d.region+ ' / ' + d.location + '<br/>'+
+                '<strong> Attacking Commander: </strong>'+d.attacker_commander + '<br/>'+
+                '<strong> Defending Commander: </strong>'+d.defender_commander;
+
+            hovercard.html(tip)
+                .style("left", d3.event.pageX + 'px')
+                .style('top', d3.event.pageY + 'px');
+        });
+
+        path.on("mouseout", function(d) {
+            hovercard.transition()
+                .duration(100)
+                .style("opacity", 0);
+        });
         
     }
     
